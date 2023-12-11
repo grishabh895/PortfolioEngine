@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Portfolio</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background: #f7f7f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 900px;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin: 18px;
+        }
+
+        form {
+            padding: 20px;
+            text-align: center;
+        }
+
+        h2 {
+            color: #3498db;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            color: #333333;
+            margin-top: 10px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        input[type="submit"] {
+            background: #3498db;
+            color: #ffffff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.3s ease;
+            display: inline-block;
+        }
+
+        input[type="submit"]:hover {
+            background: #277db1;
+        }
+
+        .result {
+            padding: 20px;
+        }
+
+        h3 {
+            color: #3498db;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        ul {
+            padding: 0;
+            list-style: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        li {
+            display: inline-block;
+            margin-right: 20px;
+        }
+
+        .company-block {
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            margin-left: 10px;
+        }
+        .company-block h4 {
+            font-size: 1.5em; /* Adjust the size as needed */
+            margin-bottom: 5px;
+        }
+        .company-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            margin-top: 1px;
+        }
+
+        .company-details {
+            width: 48%;
+            text-align: left;
+            margin-top: 40px;
+        }
+
+        .chart-container {
+            width: 48%;
+            text-align: center;
+        }
+        .chart-container h5 {
+            font-size: 1em;
+        }
+/* Add this style block in your existing <style> tag */
+ /* Add this style block in your existing <style> tag */
+    .strategy-checkbox-container {
+        display: flex;
+        flex-wrap: wrap;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .strategy-checkbox-container li {
+        margin-right: 20px; /* Adjust as needed for spacing between checkboxes and labels */
+    }
+
+    .strategy-checkbox-container input[type="checkbox"] {
+        vertical-align: middle;
+    }
+
+
+        canvas {
+            max-width: 100%;
+            height: 300px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <form action="/" method="POST">
+            <h2>Stock Portfolio</h2>
+            <label for="invest_amount">Enter Investment Amount (USD):</label>
+            <input name="invest_amount" type="text" required />
+            <label for="strategy">Select Investment Strategies:</label>
+            <!-- Update the checkboxes to include labels -->
+            <div class="strategy-checkbox-container">
+                <li>
+                    <label for="ethical-investing" style="word-wrap: break-word">
+                        <input type="checkbox" id="ethical-investing" name="strategy" value="Ethical Investing">
+                        Ethical Investing
+                    </label>
+                </li>
+                <li>
+                    <label for="growth-investing" style="word-wrap: break-word">
+                        <input type="checkbox" id="growth-investing" name="strategy" value="Growth Investing">
+                        Growth Investing
+                    </label>
+                </li>
+                <li>
+                    <label for="index-investing" style="word-wrap: break-word">
+                        <input type="checkbox" id="index-investing" name="strategy" value="Index Investing">
+                        Index Investing
+                    </label>
+                </li>
+                <li>
+                    <label for="quality-investing" style="word-wrap: break-word">
+                        <input type="checkbox" id="quality-investing" name="strategy" value="Quality Investing">
+                        Quality Investing
+                    </label>
+                </li>
+                <li>
+                    <label for="value-investing" style="word-wrap: break-word">
+                        <input type="checkbox" id="value-investing" name="strategy" value="Value Investing">
+                        Value Investing
+                    </label>
+                </li>
+            </div>
+
+            <input type="submit" value="Generate Portfolio" />
+        </form>
+        <div class="result">
+            {% if request.method == "POST" and error == "success" %}
+                <h3>Portfolio Information:</h3>
+                <ul>
+                    <li><b>Selected Stocks:</b> {{', '.join(selected_stocks)}}</li>
+                    <li><b>Allocation per Stock:</b> ${{allocation_per_stock| round(2)}}</li>
+                </ul>
+                <h3>Portfolio Composition</h3>
+                {% for item in portfolio_composition %}
+                    <div class="company-block">
+                        <h4>{{ item.company_name }}</h4>
+                        <div class="company-info">
+                            <div class="company-details">
+                                <ul>
+                                    <table>
+                                        <tr>
+                                            <td><strong>Current Price:</strong></td>
+                                            <td>${{ item.current_price }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Shares to Buy:</strong></td>
+                                            <td>{{ item.shares_to_buy }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Investment Strategy:</strong></td>
+                                            <td>{{ item.strategies[0] }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Growth Rate over 5 Days:</strong></td>
+                                            <td>
+                                                {% if item.growth_rate_5_days > 0 %}
+                                                    <span style="color: green;">+{{ item.growth_rate_5_days | round(2) }}%</span>
+                                                {% elif item.growth_rate_5_days < 0 %}
+                                                    <span style="color: red;">{{ item.growth_rate_5_days | round(2) }}%</span>
+                                                {% else %}
+                                                    {{ item.growth_rate_5_days }}%
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </ul>
+                            </div>
+                            <div class="chart-container">
+                                <h5>Weekly Trend</h5>
+                                <canvas id="chart-{{ item.symbol|safe }}" width="400" height="300"></canvas>
+                                <script>
+                                    document.addEventListener("DOMContentLoaded", function() {
+                                        var resultData = {{ item.result|safe }};
+                                        var dates = Object.keys(resultData).map(function(dateString) {
+                                            var date = new Date(dateString);
+                                            date.setDate(date.getDate() + 1);
+                                            var day = date.getDate();
+                                            var monthNames = [
+                                                "Jan", "Feb", "Mar",
+                                                "Apr", "May", "Jun", "Jul",
+                                                "Aug", "Sep", "Oct",
+                                                "Nov", "Dec"
+                                            ];
+                                            var monthIndex = date.getMonth();
+                                            return day + '-' + monthNames[monthIndex];
+                                        }).reverse();  // Reverse the order of dates
+                        
+                                        var data = Object.values(resultData).reverse();  // Reverse the order of data
+                        
+                                        var ctx = document.getElementById('chart-{{ item.symbol|safe }}').getContext('2d');
+                                        var chart = new Chart(ctx, {
+                                            type: 'line',
+                                            data: {
+                                                labels: dates,
+                                                datasets: [{
+                                                    label: 'Closing Prices',
+                                                    data: data,
+                                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                                    borderWidth: 2,
+                                                    fill: false,
+                                                    pointRadius: 0, // Do not show points
+                                                }]
+                                            },
+                                            options: {
+                                                responsive: true,
+                                                scales: {
+                                                    x: [{
+                                                        type: 'linear',
+                                                        position: 'bottom',
+                                                        ticks: {
+                                                            stepSize: 1
+                                                        }
+                                                    }],
+                                                    y: [{
+                                                        type: 'linear',
+                                                        position: 'left'
+                                                    }]
+                                                }
+                                            }
+                                        });
+                                    });
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                {% if request.method == "POST" and error != "success" %}
+                    <h4 style="color: red; text-align: center;">Error:</h3>
+                    <p style="text-align: center; font-size: 14px; color: red;">{{ error }}</p>
+                {% endif %}
+            {% endif %}
+        </div>
+        
+    </div>
+</body>
+
+</html>
